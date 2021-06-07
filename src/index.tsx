@@ -1,10 +1,19 @@
-import { AnyAaaaRecord } from 'dns';
+// import { AnyAaaaRecord } from 'dns';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { setConstantValue } from 'typescript';
+// import { setConstantValue } from 'typescript';
 import './index.css';
 // import App from './App';
 import reportWebVitals from './reportWebVitals';
+
+/**
+ * @interface Shape of Square.props
+ * 
+ * @property {string} value 
+ *    The value of the square, either 'X', 'O', or null.
+ * @property {() => void}
+ *    Function that calls the handleClick function in class Game when a square is clicked.
+ */
 
 interface SquareProp {
   value: string;
@@ -18,6 +27,15 @@ function Square(props: SquareProp) {
     </button>
   );
 }
+
+/**
+ * @interface Shape of Board.props
+ * 
+ * @property {Array<string>} squares
+ *    Array containing the values of each square on the board.
+ * @property {(i:number) => void}
+ *    Function that calls the handleClick function in class Game when a square is clicked.
+ */
 
 interface BoardProp {
   squares: Array<string>;
@@ -57,14 +75,32 @@ class Board extends React.Component<BoardProp> {
   }
 }
 
-interface SquaresState {
-  squares: Array<string>;
-}
+/**
+ * @interface Shape of Game.state
+ * 
+ * @property {Array<SquaresState} history
+ *    Array of arrays containing the entire history of the game, i.e. the state of the board at every turn.
+ * @property {Boolean} xIsNext
+ *    Boolean that takes on true when it's X's turn to go next, false otherwise.
+ * @property {number} stepNumber 
+ *    Number that keeps track of how many turns have been played in the game so far.
+ */
 
 interface GameState {
   history: Array<SquaresState>;
   xIsNext: Boolean;
   stepNumber: number;
+}
+
+/**
+ * @interface Shape of SquareState which is a type used in GameState
+ * 
+ * @property {Array<string>} squares
+ *    Array containing the values of the squares at a given moment
+ */
+
+interface SquaresState {
+  squares: Array<string>;
 }
 
 class Game extends React.Component<{}, GameState> {
