@@ -5,22 +5,18 @@ import { setConstantValue } from 'typescript';
 import './index.css';
 // import App from './App';
 import reportWebVitals from './reportWebVitals';
-// implement winner and have game messasges for who's turn and if somoene's won
-// implement time travel 
 
 interface SquareProp {
   value: string;
   onClick: () => void;
 }
 
-class Square extends React.Component<SquareProp> {
-  render() {
-    return (
-      <button className={"square"} onClick={this.props.onClick}>
-        {this.props.value}
-      </button>
-    );
-  }
+function Square(props: SquareProp) {
+  return (
+    <button className={"square"} onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
 }
 
 interface BoardProp {
@@ -68,7 +64,7 @@ interface SquaresState {
 interface GameState {
   history: Array<SquaresState>;
   xIsNext: Boolean;
-  turnNumber: number;
+  stepNumber: number;
 }
 
 class Game extends React.Component<{}, GameState> {
@@ -79,38 +75,90 @@ class Game extends React.Component<{}, GameState> {
         squares: Array(9).fill(null),
       }],
       xIsNext: true,
-      turnNumber: 0,
+      stepNumber: 0,
     }
   }
 
   handleClick(i: number) {
-    const history = this.state.history;
-    const current = history[history.length - 1]
-    const nextState = current.squares.slice()
-    if (nextState[i]) {
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
+    const current = history[history.length - 1];
+    const nextState = current.squares.slice();
+    if (nextState[i] || checkWinner(current.squares)) {
       return;
     }
-    if (this.state.turnNumber % 2 === 0) {
-      nextState[i] = 'X';
-    } else {
-      nextState[i] = 'O';
-    }
+
+    nextState[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
       history: history.concat([{squares: nextState}]),
       xIsNext: !this.state.xIsNext,
-      turnNumber: this.state.turnNumber + 1,
+      stepNumber: history.length,
     })
   }
+
+  jumpStep(step: number) {
+    this.setState({
+      history: this.state.history,
+      xIsNext: (step % 2) === 0,
+      stepNumber: step,
+    })
+  }
+
   render() {
     const history = this.state.history;
-    const current = history[history.length - 1]
+    const current = history[history.length - 1];
+    const moves = history.map((one, index) => {
+      const desc = 'Go to move ' + index;
+      return (
+        <li key={index}>
+          <button onClick={() => this.jumpStep(index)}>
+            {desc}
+          </button>
+        </li>
+        )
+      }
+    );
+
+    let status = 'Next Player: ' + (this.state.xIsNext ? 'X' : 'O');
+    let winner = checkWinner(current.squares);
+    if (winner) {
+      status = 'Player ' + winner + ' wins!'
+    }
     return (
-      <Board 
-        squares={current.squares} 
-        onClick={(i) => this.handleClick(i)} 
-      />
+      <div className="game">
+        <div className="game-board">
+          <Board 
+            squares={current.squares} 
+            onClick={(i) => this.handleClick(i)} 
+          />
+        </div>
+        <div className="game-info">
+          <div>{status}</div>
+          <div>{moves}</div>
+        </div>
+      </div>
     );
   }
+}
+
+function checkWinner(squares: Array<string>) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  return null;
+
 }
 
 ReactDOM.render(
